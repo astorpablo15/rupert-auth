@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pagesRouter = require('./pages/pages.routes');
-const sessionRouter = require('./session/session.routes');
+const authRoutes = require('./auth/auth.routes');
 
 router.get('/health', (_req, res) => {
     res.status(200).json({
@@ -11,6 +11,6 @@ router.get('/health', (_req, res) => {
     })
 })
 .use(pagesRouter)
-.use('/api', sessionRouter);
+.use('/api/auth', authRoutes);
 
 module.exports = router;
