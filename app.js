@@ -11,6 +11,7 @@ const md5 = require('md5');
 
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const TwitterStrategy = require('passport-twitter').Strategy;
 
 const UserModel = require('./src/services/mongo/models/user.model');
 
@@ -42,6 +43,15 @@ app.use(session({
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
+
+passport.use('twitter', new TwitterStrategy({
+    consumerKey:"DH98IJEVZjecdPig5BRdiEG5U",
+    consumerSecret: "g2CsuAfcOKRB8gx5JFg55GmwT6sbqBZjB6vtgUu0QgsuSfKNI0",
+    callbackURL: "http://localhost:3005/auth/twitter/callback"
+}, (accessToken, refreshToken, profile, done) => {
+    console.log(profile);
+    done(null, profile);
+}));
 
 passport.use('login', new LocalStrategy(async (username, password, done) => {
     const userData = await UserModel.findOne({username, password: md5(password)});
