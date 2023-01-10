@@ -7,13 +7,6 @@ require('dotenv').config();
 
 const mongooseConnect = require('./src/services/mongo/connect');
 
-const md5 = require('md5');
-
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-
-const UserModel = require('./src/services/mongo/models/user.model');
-
 const { getStoreConfig } = require('./src/services/session/session.config');
 const indexRouter = require('./src/routes/index');
 
@@ -42,42 +35,6 @@ app.use(session({
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
-
-passport.use('login', new LocalStrategy(async (username, password, done) => {
-    const userData = await UserModel.findOne({username, password: md5(password)});
-    if(!userData){
-        return done(null, false);
-    }
-    done(null, userData);
-}));
-
-passport.use('signup', new LocalStrategy({
-    passReqToCallback: true
-}, async (req, username, password, done) => {
-    const userData = await UserModel.findOne({username, password: md5(password)});
-    if(userData){
-        return done(null, false);
-    }
-    const stageUser = new UserModel({
-        username,
-        password: md5(password),
-        fullName: req.body.fullName
-    });
-    const newUser = await stageUser.save();
-    done(null, newUser);
-}));
-
-passport.serializeUser((user, done) => {
-    done(null, user._id);
-});
-
-passport.deserializeUser(async (id, done) => {
-    const userData = await UserModel.findById(id);
-    done(null, userData);
-});
-
-app.use(passport.initialize());
-app.use(passport.session());
 
 app.use(indexRouter);
 

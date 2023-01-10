@@ -1,8 +1,31 @@
+const httpStatus = require('http-status');
+const jwt = require('jsonwebtoken');
+
 const authMiddleware = (req, res, next) => {
-    if(req.isAuthenticated()){
-        return next();
+
+    const JWT_SECRET = process.env.JWT_SECRET_KEY;
+
+    const authHeader = req.headers.authorization;
+
+    if(!authHeader){
+        return res.status(401).json({
+            success: false,
+            message: `${httpStatus[401]}`
+        });
     }
-    res.redirect('/signin');
+    const token = authHeader.split(' ')[1];
+    
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if(err){
+            return res.status(403).json({
+                success: false,
+                message: `${httpStatus[403]}: ${err.message}`
+            });
+        }
+        req.user = decoded.data
+        next();
+    });
+
 }
 
 module.exports = authMiddleware;
